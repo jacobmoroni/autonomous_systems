@@ -1,0 +1,43 @@
+clc
+clear
+
+%EOM solver KF_Localization
+
+x0=[0; 0];
+tspan=[0 50];
+
+[t,x]=ode45(@KF_localization,tspan,x0);
+
+MotorCurrent=x(:,1);
+ArmVel=x(:,2);
+ArmAngle=x(:,3);
+
+
+figure(1)
+plot (t,MotorCurrent); hold on
+title ('time vs. Motor Current');
+xlabel ('time (s)');
+ylabel ('Current(A)');
+
+figure(2)
+plot (t,ArmVel); hold on
+title ('time vs. Arm Velocity');
+xlabel ('time (s)');
+ylabel ('Velocity');
+
+figure(3)
+plot (t,ArmAngle); hold on
+title ('time vs. Arm Angle');
+xlabel ('time (s)');
+ylabel ('Angle (Deg)');
+
+figure(4)
+plot (t,CapacitorVoltage); hold on
+title ('time vs. Capacitor Voltage');
+xlabel ('time (s)');
+ylabel ('Voltage');
+
+
+mass = 100; %kg
+t=0:.01:50;
+for (t >= 0 && t<5)
