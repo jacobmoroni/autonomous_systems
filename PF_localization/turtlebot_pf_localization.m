@@ -6,12 +6,12 @@ clc
 
  %tuning parameters
  MM = 3; % No. of landmarks
- M = 1000; %number of points in particle filter
+ M = 100; %number of points in particle filter
  showbot = true;
  
 %% VELOCITY MOTION MODEL
 %initialize time
-Ts = .1 %s
+Ts = .1; %s
 tfinal = 20; %s
 t = 0:Ts:tfinal;
 N = length(t);
@@ -22,16 +22,13 @@ y_true = zeros(1,N);
 theta_true = zeros(1,N);
 
 %initial positions
-x_true(1) = -5;%m
-y_true(1) = -3;%m
-theta_true(1) = 90*pi/180;%deg
+x_true(1) = 0;%m
+y_true(1) = 0;%m
+theta_true(1) = 0;%rad
 
 %linear and angular velocity equations
 v_c = 1+ 0.5*cos(2*pi*.2*t);
 w_c = -.2 + 2*cos(2*pi*0.6*t);
-
-% v_c = 10+ 0.5*cos(2*pi*.2*t);
-% w_c = -.2 + 2*cos(2*pi*0.6*t);
 
 %noise characteristics of velocities experienced by the robot
 alpha1 = .1;

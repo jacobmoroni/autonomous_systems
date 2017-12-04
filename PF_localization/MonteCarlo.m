@@ -19,7 +19,7 @@ function chi_t = MonteCarlo(chi_t_1, u_t,z_t,landmark,alphas,Ts,sig)
     w_t=w_t/sum(w_t);
     %resample points with low variance sampler based on weights
     [chi_t,un] = low_var_sampler(chibar_t,w_t);
-    if un < 50
+    if un < 35
             chi_t = chi_t+randn(3,M)./un;
             plot (chi_t(1,:),chi_t(2,:),'.b')
             hold on

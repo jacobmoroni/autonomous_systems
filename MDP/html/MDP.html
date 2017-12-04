@@ -1,0 +1,373 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MDP</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-11-20"><meta name="DC.source" content="MDP.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">DETERMINE VALUE FUNCTION</a></li><li><a href="#3">DETERMINE POLICY</a></li><li><a href="#4">PLOT POLICY</a></li><li><a href="#5">PLOT PATH</a></li></ul></div><pre class="codeinput"><span class="comment">% MDP.m</span>
+<span class="comment">%</span>
+<span class="comment">% Create a map for MDP path planning homework</span>
+
+clear;
+
+N = 100;
+Np = 100 + 2;
+
+map = zeros(Np,Np);        <span class="comment">% map dimension</span>
+
+<span class="comment">% Initialize walls and obstacle maps as empty</span>
+walls = zeros(Np,Np);
+obs1 = zeros(Np,Np);
+obs2 = zeros(Np,Np);
+obs3 = zeros(Np,Np);
+goal = zeros(Np,Np);
+
+<span class="comment">% Create exterior walls</span>
+walls(2,2:N) = -100;
+walls(2:N+1,2) = -100;
+walls(N+1,2:N+1) = -100;
+walls(2:N+1,N+1) = -100;
+
+<span class="comment">% Create single obstacle</span>
+obs1(20:40,30:80) = -5000;
+obs1(10:20,60:65) = -5000;
+
+<span class="comment">% Another obstacle</span>
+obs2(45:65,10:45) = -5000;
+
+<span class="comment">% Another obstacle</span>
+obs3(43:92,75:85) = -5000;
+obs3(70:80,50:75) = -5000;
+
+<span class="comment">% The goal states</span>
+goal(75:80,96:98) = 100000;
+
+<span class="comment">% Put walls and obstacles into map</span>
+map = walls + obs1 + obs2 + obs3 + goal;
+obstacle = map;
+
+<span class="comment">% Plot map</span>
+<span class="comment">% Sort through the cells to determine the x-y locations of occupied cells</span>
+[Mm,Nm] = size(map);
+xm = [];
+ym = [];
+    <span class="keyword">for</span> i = 1:Mm
+        <span class="keyword">for</span> j = 1:Nm
+            <span class="keyword">if</span> map(i,j)
+                xm = [xm i];
+                ym = [ym j];
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+figure(1); clf;
+plot(xm,ym,<span class="string">'.r'</span>);
+axis([0 Np+1 0 Np+1]);
+axis(<span class="string">'square'</span>);
+</pre><img vspace="5" hspace="5" src="MDP_01.png" alt=""> <h2 id="2">DETERMINE VALUE FUNCTION</h2><pre class="codeinput"><span class="comment">%implement MDP value function</span>
+p_nn = .8; <span class="comment">%probability of going north with a north command</span>
+p_ne = .1; <span class="comment">%probability of going east with a north command</span>
+p_nw = .1; <span class="comment">%probability of going west with a north command</span>
+gamma = 1;
+diff = 50000;
+R = map-200;
+<span class="keyword">for</span> i=1:Np
+    <span class="keyword">for</span> j = 1:Np
+        V(i,j) = map(i,j);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+V_old = 0;
+<span class="keyword">while</span> diff &gt; 100
+    <span class="keyword">for</span> i = 3:Np-2
+        <span class="keyword">for</span> j = 3:Np-2
+            <span class="keyword">if</span> obstacle(i,j) ~= 0
+            <span class="keyword">else</span>
+            V_E = V(i+1,j)*p_nn+V(i,j+1)*p_nw+V(i,j-1)*p_ne;
+            V_S = V(i,j-1)*p_nn+V(i+1,j)*p_nw+V(i-1,j)*p_ne;
+            V_W = V(i-1,j)*p_nn+V(i,j-1)*p_nw+V(i,j+1)*p_ne;
+            V_N = V(i,j+1)*p_nn+V(i-1,j)*p_nw+V(i+1,j)*p_ne;
+            Vs = [V_N,V_E,V_S,V_W];
+            V(i,j) = gamma*max(Vs)+R(i,j);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    diff = abs(sum(sum(V_old))-sum(sum(V)));
+    V_old = V;
+<span class="keyword">end</span>
+
+<span class="comment">%plot value function</span>
+figure(2);clf
+bar3(V)
+title (<span class="string">'Value Function'</span>)
+</pre><img vspace="5" hspace="5" src="MDP_02.png" alt=""> <h2 id="3">DETERMINE POLICY</h2><pre class="codeinput"><span class="comment">%implement MDP policy</span>
+<span class="keyword">for</span> i = 3:Np-2
+    <span class="keyword">for</span> j = 3:Np-2
+        <span class="keyword">if</span> obstacle(i,j) ~= 0
+        <span class="keyword">else</span>
+        dir = [V(i+1,j),V(i,j+1),V(i-1,j),V(i,j-1)];
+        [foo pol(i,j)] = max(dir);
+        <span class="comment">%4-south</span>
+        <span class="comment">%3-west</span>
+        <span class="comment">%2-north</span>
+        <span class="comment">%1-east</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2 id="4">PLOT POLICY</h2><pre class="codeinput">figure(1);
+hold <span class="string">on</span>
+<span class="keyword">for</span> i = 3:Np-2
+    <span class="keyword">for</span> j = 3:Np-2
+        <span class="keyword">if</span> obstacle(i,j) ~= 0
+        <span class="keyword">else</span>
+            <span class="keyword">if</span> pol(i,j) == 1
+                dir = -pi/2;
+            <span class="keyword">elseif</span> pol(i,j) == 2
+                dir = 0;
+            <span class="keyword">elseif</span> pol(i,j) == 3
+                dir = pi/2;
+            <span class="keyword">elseif</span> pol(i,j) == 4
+                dir = pi;
+            <span class="keyword">end</span>
+            draw_arrow(i,j,.5,dir)
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="MDP_03.png" alt=""> <h2 id="5">PLOT PATH</h2><pre class="codeinput">i=1;
+path = [28,20];
+<span class="keyword">while</span> ((path(i,1) &lt; 75 || path(i,1) &gt; 80) || (path(i,2)&lt;96 || path(i,2)&gt;98))
+
+    <span class="keyword">if</span> pol(path(i,1),path(i,2)) == 1
+        path = [path;[path(i,1)+1,path(i,2)]];
+    <span class="keyword">elseif</span> pol(path(i,1),path(i,2)) == 2
+        path = [path;[path(i,1),path(i,2)+1]];
+    <span class="keyword">elseif</span> pol(path(i,1),path(i,2)) == 3
+        path = [path;[path(i,1)-1,path(i,2)]];
+    <span class="keyword">elseif</span> pol(path(i,1),path(i,2)) == 4
+        path = [path;[path(i,1),path(i,2)-1]];
+    <span class="keyword">end</span>
+    plot(path(i,1),path(i,2),<span class="string">'og'</span>,<span class="string">'LineWidth'</span>,2)
+    i = i+1;
+
+<span class="keyword">end</span>
+plot (path(:,1),path(:,2))
+title(<span class="string">'MDP path starting at (28,20)'</span>)
+</pre><img vspace="5" hspace="5" src="MDP_04.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% MDP.m
+%
+% Create a map for MDP path planning homework
+
+clear;
+
+N = 100;
+Np = 100 + 2;
+
+map = zeros(Np,Np);        % map dimension
+
+% Initialize walls and obstacle maps as empty
+walls = zeros(Np,Np);
+obs1 = zeros(Np,Np);
+obs2 = zeros(Np,Np);
+obs3 = zeros(Np,Np);
+goal = zeros(Np,Np);
+
+% Create exterior walls
+walls(2,2:N) = -100;
+walls(2:N+1,2) = -100;
+walls(N+1,2:N+1) = -100;
+walls(2:N+1,N+1) = -100;
+
+% Create single obstacle
+obs1(20:40,30:80) = -5000;
+obs1(10:20,60:65) = -5000;
+
+% Another obstacle
+obs2(45:65,10:45) = -5000;
+
+% Another obstacle
+obs3(43:92,75:85) = -5000;
+obs3(70:80,50:75) = -5000;
+
+% The goal states
+goal(75:80,96:98) = 100000;
+
+% Put walls and obstacles into map
+map = walls + obs1 + obs2 + obs3 + goal;
+obstacle = map;
+
+% Plot map
+% Sort through the cells to determine the x-y locations of occupied cells
+[Mm,Nm] = size(map);
+xm = [];
+ym = [];
+    for i = 1:Mm
+        for j = 1:Nm
+            if map(i,j)
+                xm = [xm i];
+                ym = [ym j];
+            end
+        end
+    end
+
+figure(1); clf;
+plot(xm,ym,'.r');
+axis([0 Np+1 0 Np+1]);
+axis('square'); 
+
+%% DETERMINE VALUE FUNCTION
+%implement MDP value function
+p_nn = .8; %probability of going north with a north command
+p_ne = .1; %probability of going east with a north command
+p_nw = .1; %probability of going west with a north command
+gamma = 1;
+diff = 50000;
+R = map-200;
+for i=1:Np
+    for j = 1:Np
+        V(i,j) = map(i,j);
+    end
+end
+V_old = 0;
+while diff > 100
+    for i = 3:Np-2
+        for j = 3:Np-2
+            if obstacle(i,j) ~= 0
+            else
+            V_E = V(i+1,j)*p_nn+V(i,j+1)*p_nw+V(i,j-1)*p_ne;
+            V_S = V(i,j-1)*p_nn+V(i+1,j)*p_nw+V(i-1,j)*p_ne;
+            V_W = V(i-1,j)*p_nn+V(i,j-1)*p_nw+V(i,j+1)*p_ne;
+            V_N = V(i,j+1)*p_nn+V(i-1,j)*p_nw+V(i+1,j)*p_ne;
+            Vs = [V_N,V_E,V_S,V_W];
+            V(i,j) = gamma*max(Vs)+R(i,j);
+            end
+        end
+    end
+    diff = abs(sum(sum(V_old))-sum(sum(V)));
+    V_old = V;
+end
+
+%plot value function
+figure(2);clf
+bar3(V)
+title ('Value Function')
+
+%% DETERMINE POLICY
+%implement MDP policy
+for i = 3:Np-2
+    for j = 3:Np-2
+        if obstacle(i,j) ~= 0
+        else
+        dir = [V(i+1,j),V(i,j+1),V(i-1,j),V(i,j-1)];
+        [foo pol(i,j)] = max(dir);
+        %4-south
+        %3-west
+        %2-north
+        %1-east
+        end
+    end
+end
+
+%% PLOT POLICY
+figure(1);
+hold on
+for i = 3:Np-2
+    for j = 3:Np-2
+        if obstacle(i,j) ~= 0
+        else
+            if pol(i,j) == 1
+                dir = -pi/2;
+            elseif pol(i,j) == 2
+                dir = 0;
+            elseif pol(i,j) == 3
+                dir = pi/2;
+            elseif pol(i,j) == 4
+                dir = pi;
+            end
+            draw_arrow(i,j,.5,dir)
+        end
+    end
+end
+%% PLOT PATH
+i=1;
+path = [28,20];
+while ((path(i,1) < 75 || path(i,1) > 80) || (path(i,2)<96 || path(i,2)>98))
+    
+    if pol(path(i,1),path(i,2)) == 1
+        path = [path;[path(i,1)+1,path(i,2)]];
+    elseif pol(path(i,1),path(i,2)) == 2
+        path = [path;[path(i,1),path(i,2)+1]];
+    elseif pol(path(i,1),path(i,2)) == 3
+        path = [path;[path(i,1)-1,path(i,2)]];
+    elseif pol(path(i,1),path(i,2)) == 4
+        path = [path;[path(i,1),path(i,2)-1]];
+    end
+    plot(path(i,1),path(i,2),'og','LineWidth',2)
+    i = i+1;
+    
+end
+plot (path(:,1),path(:,2))
+title('MDP path starting at (28,20)')
+##### SOURCE END #####
+--></body></html>

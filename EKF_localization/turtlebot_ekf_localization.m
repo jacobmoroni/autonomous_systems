@@ -140,7 +140,7 @@ for i=2:N
         dy_est(j,i) = landmark(2,j)-mubar(2,i);
         range_est(j,i) = sqrt(dx_est(j,i)^2+dy_est(j,i)^2);
         
-        %estimated bearign angle from front of bot to landmark
+        %estimated bearing angle from front of bot to landmark
         bearing_est(j,i) = atan2(dy_est(j,i),dx_est(j,i))-mubar(3,i);
         
         %combined estimated measurement matrix
